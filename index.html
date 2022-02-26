@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyperborea 3 Lookup Tool</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    
+    <style>
+        table {
+            caption-side: top;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- VUE -->
+    <script src="https://unpkg.com/vue@3.2.31/dist/vue.global.prod.js"></script>
+
+
+    <div id="app" align="center" class="container-sm">
+        <div class="row">
+            <div class="col"></div>
+            <div class="col-sm-8">
+                <br>
+                <button @click="showSpells">Spells</button>
+                <button @click="showMonsters">Monsters</button>
+                <br>
+                <br>
+                <input ref="search" type="text" :label="search" v-model="search" />
+                <br>
+                <hr>
+                <br>
+            </div>
+            <div class="col"></div>
+        </div>
+
+        <div class="row">
+            <div class="col"></div>
+            <div class="col-sm-8">
+
+                <div id="spells" v-if="spellsOn" v-for="spell in spells.filter(
+                    spell => spell.spell_name.toLowerCase().replace('æ', 'ae').includes(search.toLowerCase())
+                )" :key="spell.spell_id">
+                    <h1 align="left">{{ spell.spell_name }}</h1>
+                    <table class="table table-striped">
+                        <tbody>
+                            <tr>
+                                <td><b>Level</b></td>
+                                <td>{{ spell.level }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Range</b></td>
+                                <td>{{ spell.rng }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Duration</b></td>
+                                <td>{{ spell.dur }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Reversible</b></td>
+                                <td>{{ (spell.reversible) ? 'Yes' : 'No' }}</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                    <div v-html="spell.spell_desc" align="justify"></div>
+                    <div align="left"><i>Page Number: {{ spell.pp }}</i></div>
+                    <hr>
+                    <br>
+
+                </div>
+                <div id="monsters" v-if="monstersOn" v-for="monster in monsters.filter(
+                    monster => monster.monster_name.toLowerCase().replace('æ', 'ae').includes(search.toLowerCase())
+                )" :key="monster.monster_id">
+                    <h1 align="left">{{ monster.monster_name }}</h1>
+                    <p v-if="monster.alternate_names" align="left"><b>Alternate Names:</b> {{ monster. alternate_names
+                        }}</p>
+                    <table class="table table-striped">
+                        <tbody>
+                            <tr>
+                                <td><b>No. Encountered</b></td>
+                                <td>{{ monster.no_enc }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Alignment</b></td>
+                                <td>{{ monster.align }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Size</b></td>
+                                <td>{{ monster.size}}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Movement</b></td>
+                                <td>{{ monster.mv }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Dexterity</b></td>
+                                <td>{{ monster.dx }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Armour Class</b></td>
+                                <td>{{ monster.ac }} [{{ 19 - monster.ac }}]</td>
+                            </tr>
+                            <tr>
+                                <td><b>Hit Dice</b></td>
+                                <td>{{ monster.hd }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Attack Rate</b></td>
+                                <td>{{ monster.atk_rate }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Damage</b></td>
+                                <td>{{ monster.damage }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Saving Throw</b></td>
+                                <td>{{ monster.sv }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Morale</b></td>
+                                <td>{{ monster.morale }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Experience Points</b></td>
+                                <td>{{ monster.xp }}</td>
+                            </tr>
+                            <tr>
+                                <td><b>Treasure Class</b></td>
+                                <td>{{ monster.treasure }}</td>
+                            </tr>
+                            <tr v-if="monster.undead_type">
+                                <td><b>Undead Type</b></td>
+                                <td>{{ monster.undead_type }}</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                    <div v-html="monster.description" align="justify"></div>
+                    <hr>
+                    <br>
+
+                </div>
+            </div>
+            <div class="col"></div>
+        </div>
+    </div>
+
+    <script>
+        Vue.createApp({
+            data() {
+                return {
+                    monsters: [],
+                    spells: [],
+                    spellsOn: false,
+                    monstersOn: false,
+                    search: ''
+                }
+            },
+            methods: {
+                focusInput() {
+                    this.$refs.search.focus();
+                },
+                showSpells() {
+                    this.monstersOn = false;
+                    this.spellsOn = true;
+                    this.search = '';
+                    this.focusInput();
+                },
+                showMonsters() {
+                    this.spellsOn = false;
+                    this.monstersOn = true;
+                    this.search = '';
+                    this.focusInput();
+                },
+                async getMonsters() {
+                    const url = "https://rpg-tools-app.herokuapp.com/hyperborea3/monsters/all";
+                    let response = await fetch(url);
+                    let monsters = await response.json();
+                    this.monsters = monsters;
+                    console.log(this.monsters)
+                },
+                async getSpells() {
+                    const url = "https://rpg-tools-app.herokuapp.com/hyperborea3/spells/all";
+                    let response = await fetch(url);
+                    let spells = await response.json();
+                    this.spells = spells;
+                    console.log(this.spells)
+                },
+            },
+            created() {
+                this.getMonsters();
+                this.getSpells();
+            },
+            unmounted() {
+                console.log('unmounted')
+            }
+        }).mount('#app')
+    </script>
+
+
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+
+
+
+</body>
+
+</html>
