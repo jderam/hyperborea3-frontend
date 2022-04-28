@@ -24,6 +24,11 @@
             padding-right: 1rem;
             text-align: center;
         }
+        h1 {
+            font-family: 'Suez One', 'Arial Narrow Bold', sans-serif;
+            font-size: xx-large;
+            text-align: center;
+        }
         .spell-head {
             font-family: 'Suez One', 'Arial Narrow Bold', sans-serif;
             text-align: left;
@@ -54,18 +59,71 @@
 
 
     <div id="app" align="center" class="container-sm">
+
+
         <div class="row">
             <div class="col"></div>
             <div class="col-sm-8">
                 <br>
+                <h1>Hyperborea Spell Lookup Tool</h1>
+
+                <input type="checkbox" id="lvl1" :label="Lvl1" v-model="levelFilters" value="1" />
+                <label for="lvl1">1st</label>&nbsp;&nbsp;
+                <input type="checkbox" id="lvl2" :label="Lvl2" v-model="levelFilters" value="2" />
+                <label for="lvl2">2nd</label>&nbsp;&nbsp;
+                <input type="checkbox" id="lvl3" :label="Lvl3" v-model="levelFilters" value="3" />
+                <label for="lvl3">3rd</label>&nbsp;&nbsp;
+                <input type="checkbox" id="lvl4" :label="Lvl4" v-model="levelFilters" value="4" />
+                <label for="lvl4">4th</label>&nbsp;&nbsp;
+                <input type="checkbox" id="lvl5" :label="Lvl5" v-model="levelFilters" value="5" />
+                <label for="lvl5">5th</label>&nbsp;&nbsp;
+                <input type="checkbox" id="lvl6" :label="Lvl6" v-model="levelFilters" value="6" />
+                <label for="lvl6">6th</label>&nbsp;&nbsp;
+                
+                <br>
+                <button @click="resetFiltersAll">All</button>&nbsp;&nbsp;
+                <input type="checkbox" id="clr" v-model="schoolFilters" value="clr" />
+                <label for="clr">clr</label>&nbsp;&nbsp;
+                <input type="checkbox" id="cry" v-model="schoolFilters" value="cry" />
+                <label for="cry">cry</label>&nbsp;&nbsp;
+                <input type="checkbox" id="drd" v-model="schoolFilters" value="drd" />
+                <label for="drd">drd</label>&nbsp;&nbsp;
+                <input type="checkbox" id="ill" v-model="schoolFilters" value="ill" />
+                <label for="ill">ill</label>&nbsp;&nbsp;
+                <input type="checkbox" id="mag" v-model="schoolFilters" value="mag" />
+                <label for="mag">mag</label>&nbsp;&nbsp;
+                <input type="checkbox" id="nec" v-model="schoolFilters" value="nec" />
+                <label for="nec">nec</label>&nbsp;&nbsp;
+                <input type="checkbox" id="pyr" v-model="schoolFilters" value="pyr" />
+                <label for="pyr">pyr</label>&nbsp;&nbsp;
+                <input type="checkbox" id="wch" v-model="schoolFilters" value="wch" />
+                <label for="wch">wch</label>&nbsp;&nbsp;
+                <button @click="resetFiltersNone">None</button>
+                <br><br>
+            </div>
+            <div class="col">
+                
+                
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col"></div>
+            <div class="col-sm-8">
                 <input ref="search" type="text" :label="search" v-model="search" placeholder="search for spell"/>
-                <button @click="resetSearch">Reset</button>
+                <button @click="resetSearch">Clear</button>
                 <br>
                 <hr>
                 <br>
+
+                <!-- <p>Contents of levelFilters: {{ levelFilters }}</p> -->
+                <!-- <p>Contents of schoolFilters: {{ schoolFilters }}</p> -->
+                <!-- <p>Contents of schoolLevelFilters: {{ schoolLevelFilters }}</p> -->
+
             </div>
             <div class="col"></div>
         </div>
+
 
         <div class="row">
             <div class="col"></div>
@@ -73,6 +131,8 @@
 
                 <div id="spells" v-for="spell in spells.filter(
                     spell => spell.spell_name.toLowerCase().replace('æ', 'ae').replace('’', '\'').includes(search.toLowerCase())
+                ).filter(
+                    spell => inSchLvlFilter(spell.level)
                 )" :key="spell.spell_id">
                     <div class="spell-head">
                         <h2>{{ spell.spell_name }}</h2>
@@ -96,11 +156,34 @@
     </div>
 
     <script>
+
         Vue.createApp({
             data() {
                 return {
                     spells: [],
-                    search: ''
+                    search: '',
+                    levelFilters: [1, 2, 3, 4, 5, 6],
+                    schoolFilters: [
+                        "clr",
+                        "cry",
+                        "drd",
+                        "ill",
+                        "mag",
+                        "nec",
+                        "pyr",
+                        "wch"
+                    ]
+                }
+            },
+            computed: {
+                schoolLevelFilters() {
+                    const schoolLevel = [];
+                    for (i = 0; i < this.schoolFilters.length; i++) {
+                        for (j = 0; j < this.levelFilters.length; j++) {
+                            schoolLevel.push(this.schoolFilters[i].concat(" ", this.levelFilters[j]));
+                        }
+                    }
+                    return schoolLevel;
                 }
             },
             methods: {
@@ -117,6 +200,28 @@
                     let spells = await response.json();
                     this.spells = spells;
                     console.log(this.spells)
+                },
+                resetFiltersAll() {
+                    this.levelFilters = [1, 2, 3, 4, 5, 6];
+                    this.schoolFilters = [
+                        "clr",
+                        "cry",
+                        "drd",
+                        "ill",
+                        "mag",
+                        "nec",
+                        "pyr",
+                        "wch"
+                    ];
+                },
+                resetFiltersNone() {
+                    this.levelFilters = [];
+                    this.schoolFilters = [];
+                },
+                inSchLvlFilter(schoolLevelStr) {
+                    let slArray = schoolLevelStr.split(",").map(el => el.trim());
+                    let intersection = slArray.filter(e => this.schoolLevelFilters.includes(e));
+                    return intersection.length > 0 ? true : false
                 }
             },
             created() {
